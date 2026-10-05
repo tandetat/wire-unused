@@ -67,6 +67,25 @@ func (g *TypeGraph) FindUnused() *UnusedResult {
 			result.Sets[j].QualifiedName
 	})
 
+	for _, p := range g.standalone {
+		if needed[p] {
+			continue
+		}
+		var providedTypes []string
+		for _, out := range p.Outputs {
+			providedTypes = append(
+				providedTypes, shortTypeName(out))
+		}
+		result.Providers = append(result.Providers,
+			UnusedProvider{
+				QualifiedName: p.Standalone.QualifiedName(),
+				Provides: strings.Join(
+					providedTypes, ", "),
+				Line: p.Standalone.Line,
+			},
+		)
+	}
+
 	return result
 }
 

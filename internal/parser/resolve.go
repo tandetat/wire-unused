@@ -19,6 +19,9 @@ type ResolvedProvider struct {
 	// SetRef links back to the ProviderSet that contains
 	// this provider (nil for standalone providers).
 	SetRef *ProviderSetRef
+	// Standalone links back to the wire.Build() arg for
+	// standalone providers (nil for set providers).
+	Standalone *StandaloneProviderRef
 }
 
 // ResolvedArgs holds all resolved information needed
@@ -40,8 +43,8 @@ func ResolveAll(
 	args *ClassifiedArgs,
 ) (*ResolvedArgs, error) {
 	result := &ResolvedArgs{
-		Bindings:     args.Bindings,
-		Targets:      args.StructProviders,
+		Bindings: args.Bindings,
+		Targets:  args.StructProviders,
 		SetProviders: make(
 			map[*ProviderSetRef][]*ResolvedProvider,
 		),
@@ -71,6 +74,7 @@ func ResolveAll(
 		}
 		rp.Name = sp.FuncName
 		rp.PkgPath = sp.PkgPath
+		rp.Standalone = sp
 		result.Providers = append(result.Providers, rp)
 	}
 

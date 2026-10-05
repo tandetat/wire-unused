@@ -22,6 +22,8 @@ type TypeGraph struct {
 	targets []*parser.StructProvider
 	// all provider sets and their providers
 	setProviders map[*parser.ProviderSetRef][]*parser.ResolvedProvider
+	// providers passed directly to wire.Build()
+	standalone []*parser.ResolvedProvider
 }
 
 // Build constructs a TypeGraph from resolved args.
@@ -39,6 +41,9 @@ func Build(resolved *parser.ResolvedArgs) *TypeGraph {
 			g.providers.Set(out, p)
 		}
 		g.deps[p] = p.Inputs
+		if p.Standalone != nil {
+			g.standalone = append(g.standalone, p)
+		}
 	}
 
 	for _, b := range resolved.Bindings {

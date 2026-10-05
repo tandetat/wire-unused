@@ -156,6 +156,19 @@ func TestBindAndStruct(t *testing.T) {
 		r.unusedSets, want)
 }
 
+func TestStandaloneUnused(t *testing.T) {
+	r := runAnalysis(t, testdataDir("standalone_unused"))
+
+	if r.numProvs != 2 {
+		t.Errorf("provs = %d, want 2", r.numProvs)
+	}
+
+	assertSliceEqual(t, "unused sets",
+		r.unusedSets, nil)
+	assertSliceEqual(t, "unused provs",
+		r.unusedProvs, []string{"pkg_b.NewServiceB"})
+}
+
 func assertSliceEqual(
 	t *testing.T,
 	label string,

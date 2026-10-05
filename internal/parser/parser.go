@@ -13,9 +13,9 @@ import (
 
 // Injector represents a wire injector function.
 type Injector struct {
-	FuncName string
-	Filename string
-	Line     int
+	FuncName  string
+	Filename  string
+	Line      int
 	BuildCall *ast.CallExpr
 }
 
@@ -49,8 +49,17 @@ func (p *ProviderSetRef) QualifiedName() string {
 type StandaloneProviderRef struct {
 	FuncName string
 	PkgPath  string
+	PkgAlias string
 	Obj      types.Object
 	Line     int
+}
+
+// QualifiedName returns "alias.FuncName".
+func (p *StandaloneProviderRef) QualifiedName() string {
+	if p.PkgAlias != "" {
+		return p.PkgAlias + "." + p.FuncName
+	}
+	return p.FuncName
 }
 
 // StructProvider represents wire.Struct(new(T), ...).
@@ -197,12 +206,13 @@ func classifySelector(
 			sel.Sel.Name, pos)
 	}
 
+	alias := ""
+	if id, ok := sel.X.(*ast.Ident); ok {
+		alias = id.Name
+	}
+
 	switch o := obj.(type) {
 	case *types.Var:
-		alias := ""
-		if id, ok := sel.X.(*ast.Ident); ok {
-			alias = id.Name
-		}
 		result.ProviderSets = append(
 			result.ProviderSets,
 			&ProviderSetRef{
@@ -219,6 +229,7 @@ func classifySelector(
 			&StandaloneProviderRef{
 				FuncName: sel.Sel.Name,
 				PkgPath:  o.Pkg().Path(),
+				PkgAlias: alias,
 				Obj:      o,
 				Line:     pos.Line,
 			},
